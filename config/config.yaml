@@ -1,0 +1,31 @@
+# defaults:
+#     - data: dataset1
+#       optional: true
+project:
+    name: temporal-consistency
+
+data:
+    name: elephant # rand
+    train_size: 0.7
+    
+
+model:
+    name: ConvLSTM
+    future_seq: 0
+
+    batch_size: 5
+    number_filters: 16
+    input_channels: 3
+    max_epoch: 100
+
+    learning_rate: 0.01
+    momentum: 0.9
+
+experiment:
+    note: tc
+    name: ${data.name}_${model.name}_${experiment.note}
+    output: ./outputs/${data.name}_${model.name}_${now:%Y%m%dT%H%M%S} #${defaults.0.data}
+
+hydra:
+    run:
+        dir: ${experiment.output}
