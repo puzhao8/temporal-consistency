@@ -175,7 +175,12 @@ def train_conv_lstm(cfg):
                 metrics_logs = {k: v.mean for k, v in metrics_meters.items()}
 
             print(f"epoch ({phase}): {epoch}, loss: {loss_meter.mean}, dice_loss: {metrics_logs['dice_loss']}, tc_loss: {metrics_logs['tc_loss']}")
-            wandb.log({phase: {'total_loss': loss_meter.mean, 'dice_loss': metrics_logs['dice_loss'], 'tc_loss': metrics_logs['tc_loss']}, 'epoch': epoch+1})
+            wandb.log({phase: {\
+                'total_loss': loss_meter.mean, \
+                'dice_loss': metrics_logs['dice_loss'],\
+                'tc_loss': metrics_logs['tc_loss']}, \
+                'lr': optimizer.current.learning_rate, \
+                'epoch': epoch+1})
 
 
         
