@@ -121,9 +121,9 @@ def train_conv_lstm(cfg):
                             lr=cfg.model.learning_rate, 
                             momentum=cfg.model.momentum)
 
-    per_epoch_steps = 700 // cfg.model.batch_size
+    per_epoch_steps = 7000 // cfg.model.batch_size
     total_training_steps = cfg.model.max_epoch * per_epoch_steps
-    warmup_steps = 5 * per_epoch_steps
+    warmup_steps = 0 * per_epoch_steps
     lr_scheduler = get_cosine_schedule_with_warmup(optimizer, warmup_steps, total_training_steps)
     
     soft_dice_loss.__name__ = 'dice_loss'

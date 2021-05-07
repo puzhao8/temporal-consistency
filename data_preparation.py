@@ -37,7 +37,7 @@ def get_random_idx_tuples(seq_len=5, patchsize=128, samples_per_class=100):
 
 data_folder = Path("E:\PyProjects/temporal-consistency\data\elephant_hill")
 
-data_name = 'sentinel2'
+data_name = 'sentinel1'
 data_dir = data_folder / f"{data_name}_data"
 trainMask_dir = data_folder / f"{data_name}_mask"
 validMask_dir = data_folder / f"{data_name}_mask_fusion"
@@ -70,24 +70,26 @@ valid_mask_stack = np.stack(validMasks, axis=0)
 # T x C x H x W
 DATA = np.concatenate((image_stack, train_mask_stack, valid_mask_stack), axis=-1).transpose(0,3,1,2)
 
-patchsize = 128
+patchsize = 16
+seq_len = 10
+
 index_tuple_set = []
 for i in range(5):
-    index_tuple_set += get_random_idx_tuples(seq_len=5, patchsize=16, samples_per_class=1000)
+    index_tuple_set += get_random_idx_tuples(seq_len=seq_len, patchsize=patchsize, samples_per_class=1000)
     # print(len(index_tuple_set))
     # print(index_tuple_set)
 
 
 
-def get_patches(idx, patchsize=16):
+def get_patches(idx, patchsize=patchsize):
     half_patchsize = patchsize // 2
     return DATA[idx[0]:idx[1], :, \
         (idx[2]-half_patchsize):(idx[2]+half_patchsize),\
         (idx[3]-half_patchsize):(idx[3]+half_patchsize)]
 
 samples = np.stack(tuple(map(get_patches, index_tuple_set)), axis=0)
-
-np.save("elephant_patchsize_16.npy", samples)
+n, l, c, w, w = samples.shape
+np.save(f"data/elephant_{data_name}_{n}x{l}x{c}x{w}x{w}.npy", samples)
 # print(half_patchsize)
 # train_mask_stack
 
