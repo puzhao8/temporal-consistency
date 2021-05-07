@@ -24,7 +24,7 @@ model:
     momentum: 0.9
 
 experiment:
-    note: _new
+    note: new
     name: ${data.name}_${model.name}_tc_${model.tc}_${experiment.note}
     output: ./outputs/${data.name}_${model.name}_${now:%Y%m%dT%H%M%S} #${defaults.0.data}
 
