@@ -62,7 +62,8 @@ def soft_dice_loss(input:torch.Tensor, target:torch.Tensor):
     return 1 - ((2. * intersection) /
                 (iflat.sum() + tflat.sum() + eps))
 
-def temporal_consistency_loss(output, y):
+def temporal_consistency_loss(input, y):
+    output = torch.sigmoid(input)
     temporal_consistency_loss = 0
     for t in range(y.shape[1]-1):
         temporal_consistency_loss += nn.MSELoss()(output[:,t,...], y[:,t,...])
@@ -174,14 +175,18 @@ def train_conv_lstm(cfg):
                     metrics_meters[metric_fn.__name__].add(metric_value)
                 metrics_logs = {k: v.mean for k, v in metrics_meters.items()}
 
-            print(f"epoch ({phase}): {epoch}, loss: {loss_meter.mean}, dice_loss: {metrics_logs['dice_loss']}, tc_loss: {metrics_logs['tc_loss']}")
+            # print(f"lr: {lr_scheduler.get_lr()}")
+            print(f"epoch ({phase}/{cfg.model.max_epoch}): {epoch}, loss: {loss_meter.mean}, dice_loss: {metrics_logs['dice_loss']}, tc_loss: {metrics_logs['tc_loss']}, lr: {lr_scheduler.get_lr()[0]}")
             wandb.log({phase: {\
                 'total_loss': loss_meter.mean, \
                 'dice_loss': metrics_logs['dice_loss'],\
                 'tc_loss': metrics_logs['tc_loss']}, \
-                'lr': lr_scheduler.get_lr(), \
+                'lr': lr_scheduler.get_lr()[0], \
                 'epoch': epoch+1})
 
+
+    
+    
 
         
 

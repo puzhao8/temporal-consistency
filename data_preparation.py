@@ -42,9 +42,10 @@ data_dir = data_folder / f"{data_name}_data"
 trainMask_dir = data_folder / f"{data_name}_mask"
 validMask_dir = data_folder / f"{data_name}_mask_fusion"
 
-images = tuple()
+
 trainMasks = tuple()
 validMasks = tuple()
+images = tuple()
 for filename in sorted(os.listdir(data_dir)):
     
     image = imread(data_dir / filename) / 255.0
