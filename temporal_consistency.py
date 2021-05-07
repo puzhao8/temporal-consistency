@@ -124,7 +124,7 @@ def train_conv_lstm(cfg):
     per_epoch_steps = 700 // cfg.model.batch_size
     total_training_steps = cfg.model.max_epoch * per_epoch_steps
     warmup_steps = 5 * per_epoch_steps
-    scheduler = get_cosine_schedule_with_warmup(optimizer, warmup_steps, total_training_steps)
+    lr_scheduler = get_cosine_schedule_with_warmup(optimizer, warmup_steps, total_training_steps)
     
     soft_dice_loss.__name__ = 'dice_loss'
     temporal_consistency_loss.__name__ = 'tc_loss'
@@ -163,7 +163,7 @@ def train_conv_lstm(cfg):
                 if 'train' == phase:
                     total_loss.backward()
                     optimizer.step()
-                    scheduler.step()
+                    lr_scheduler.step()
 
                 total_loss_value = total_loss.cpu().detach().numpy()
                 loss_meter.add(total_loss_value)
@@ -179,7 +179,7 @@ def train_conv_lstm(cfg):
                 'total_loss': loss_meter.mean, \
                 'dice_loss': metrics_logs['dice_loss'],\
                 'tc_loss': metrics_logs['tc_loss']}, \
-                'lr': optimizer.current.learning_rate, \
+                'lr': lr_scheduler.get_lr(), \
                 'epoch': epoch+1})
 
 
