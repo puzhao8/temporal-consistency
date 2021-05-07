@@ -1,4 +1,4 @@
-import os, math
+import os, math, glob
 from pathlib import Path
 import numpy as np
 import matplotlib.pyplot as plt
@@ -21,6 +21,8 @@ from easydict import EasyDict as edict
 from tqdm import tqdm as tqdm
 from utils.meter import AverageValueMeter
 from utils.meter import accuracy
+
+from evaluate import conv_lstm_inference
 
 import wandb
 import hydra
@@ -62,7 +64,8 @@ def soft_dice_loss(input:torch.Tensor, target:torch.Tensor):
     return 1 - ((2. * intersection) /
                 (iflat.sum() + tflat.sum() + eps))
 
-def temporal_consistency_loss(output, y):
+def temporal_consistency_loss(input, y):
+    output = torch.sigmoid(input)
     temporal_consistency_loss = 0
     for t in range(y.shape[1]-1):
         temporal_consistency_loss += nn.MSELoss()(output[:,t,...], y[:,t,...])
@@ -86,13 +89,22 @@ def get_dataloader(cfg):
         return dataloader
 
     if cfg.data.name == 'elephant':
-        DATA = np.load(Path(hydra.utils.get_original_cwd()) / "data" / "elephant_patchsize_16.npy")
+        # DATA = np.load(Path(hydra.utils.get_original_cwd()) / "data" / "elephant_patchsize_16.npy")
+        if cfg.data.sat == 's2':
+            npyname = glob.glob("/home/omegazhangpzh/temporal-consistency/data/elephant_s2_*.npy")[0]
+        
+        if cfg.data.sat == 's1':
+            npyname = glob.glob("/home/omegazhangpzh/temporal-consistency/data/elephant_s1_*.npy")[0]
+
+        DATA = np.load(npyname)
+
         inputs = DATA[:, :, :3, ...]
         labels = DATA[:, :, 3:4, ...]
         labels_ = DATA[:, :, -1:, ...]
 
         from sklearn.model_selection import train_test_split
-        train_X, valid_X, train_y, valid_y = train_test_split(inputs[:1000], labels[:1000], train_size=cfg.data.train_size, random_state=42)   
+        train_X, valid_X, train_y, valid_y = train_test_split(inputs, labels, train_size=cfg.data.train_size, random_state=42)   
+        # train_X, valid_X, train_y, valid_y = train_test_split(inputs[:1000], labels[:1000], train_size=cfg.data.train_size, random_state=42)   
 
         print(train_X.shape, train_y.shape)
 
@@ -174,14 +186,27 @@ def train_conv_lstm(cfg):
                     metrics_meters[metric_fn.__name__].add(metric_value)
                 metrics_logs = {k: v.mean for k, v in metrics_meters.items()}
 
-            print(f"epoch ({phase}): {epoch}, loss: {loss_meter.mean}, dice_loss: {metrics_logs['dice_loss']}, tc_loss: {metrics_logs['tc_loss']}")
+            # print(f"lr: {lr_scheduler.get_lr()}")
+            print(f"epoch ({phase}): {epoch}/{cfg.model.max_epoch}, loss: {loss_meter.mean}, dice_loss: {metrics_logs['dice_loss']}, tc_loss: {metrics_logs['tc_loss']}, lr: {lr_scheduler.get_lr()[0]}")
             wandb.log({phase: {\
                 'total_loss': loss_meter.mean, \
                 'dice_loss': metrics_logs['dice_loss'],\
                 'tc_loss': metrics_logs['tc_loss']}, \
-                'lr': lr_scheduler.get_lr(), \
+                'lr': lr_scheduler.get_lr()[0], \
                 'epoch': epoch+1})
 
+
+    
+        if epoch % 10 == 0:
+            # model inference
+            # data_folder = Path(hydra.utils.get_original_cwd()) / "data" / "elephant_hill" / "sentinel2_data")
+            data_folder = Path("/home/omegazhangpzh/temporal-consistency/data/elephant_hill/sentinel2_data")
+            masks = conv_lstm_inference(model, data_folder).squeeze()
+
+            mask_list = [masks[idx,] for idx in range(0, masks.shape[0])]
+            maskArr = np.concatenate(tuple(mask_list), axis=1)
+            wandb.log({f"predMasks/{cfg.data.name}_ep{epoch}": wandb.Image(maskArr)})
+            # wandb.log({f"predMasks/{cfg.data.name}": plt.imshow(maskArr, cmap='hsv', vmin=1, vmax=1)})
 
         
 

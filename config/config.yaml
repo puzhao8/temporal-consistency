@@ -6,6 +6,7 @@ project:
 
 data:
     name: elephant # rand
+    sat: s2
     train_size: 0.7
     
 
@@ -13,10 +14,10 @@ model:
     name: ConvLSTM
     future_seq: 0
 
-    tc: 0.1 
+    tc: 0 
 
-    batch_size: 5
-    number_filters: 16
+    batch_size: 128
+    number_filters: 64
     input_channels: 3
     max_epoch: 100
 
@@ -25,7 +26,7 @@ model:
 
 experiment:
     note: new
-    name: ${data.name}_${model.name}_tc_${model.tc}_${experiment.note}
+    name: ${data.name}_${data.sat}_${model.name}_tc_${model.tc}_${experiment.note}
     output: ./outputs/${data.name}_${model.name}_${now:%Y%m%dT%H%M%S} #${defaults.0.data}
 
 hydra:

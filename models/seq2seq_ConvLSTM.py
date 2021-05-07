@@ -75,7 +75,7 @@ class EncoderDecoderConvLSTM(nn.Module):
         # print("encoder_vector.shape: ", encoder_vector.shape)
         # print("outputs.shape: ", outputs.shape)
 
-        return outputs.permute(0, 2, 1, 3, 4)
+        return outputs.permute(0, 2, 1, 3, 4) # b x t x 1 x H x W
 
     def forward(self, x, future_seq=0, hidden_state=None):
 
