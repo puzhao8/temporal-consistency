@@ -175,7 +175,7 @@ def train_conv_lstm(cfg):
                 tc_loss = temporal_consistency_loss(output, y)
                 dice_loss = soft_dice_loss(output, y)
 
-                total_loss =  dice_loss + cfg.model.tc * tc_loss
+                total_loss =  (1-cfg.model.tc) * dice_loss + cfg.model.tc * tc_loss
 
                 # print(f"epoch: {epoch}, loss: {total_loss}, tc_loss: {tc_loss}")
 
