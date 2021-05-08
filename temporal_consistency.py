@@ -198,8 +198,7 @@ def train_conv_lstm(cfg):
                 metrics_logs = {k: v.mean for k, v in metrics_meters.items()}
 
             # print(f"lr: {lr_scheduler.get_lr()}")
-            if cfg.model.use_lr_scheduler:
-                currlr = lr_scheduler.get_last_lr()[0] if lr_scheduler_flag else cfg.model.learning_rate
+            currlr = lr_scheduler.get_last_lr()[0] if cfg.model.use_lr_scheduler else cfg.model.learning_rate
             print(f"epoch ({phase}): {epoch+1}/{cfg.model.max_epoch}, loss: {loss_meter.mean}, dice_loss: {metrics_logs['dice_loss']}, tc_loss: {metrics_logs['tc_loss']}, lr: {currlr}")
             wandb.log({phase: {\
                 'total_loss': loss_meter.mean, \
