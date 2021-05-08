@@ -143,7 +143,7 @@ def train_conv_lstm(cfg):
     per_epoch_steps = 7000 // cfg.model.batch_size
     total_training_steps = cfg.model.max_epoch * per_epoch_steps
     warmup_steps = cfg.model.warmup_coef * per_epoch_steps
-    if lr_scheduler_flag:
+    if cfg.model.use_lr_scheduler:
         lr_scheduler = get_cosine_schedule_with_warmup(optimizer, warmup_steps, total_training_steps)
     
     soft_dice_loss.__name__ = 'dice_loss'
@@ -185,7 +185,7 @@ def train_conv_lstm(cfg):
                     total_loss.backward()
                     optimizer.step()
 
-                    if lr_scheduler_flag:
+                    if cfg.use_lr_scheduler:
                         lr_scheduler.step()
 
                 total_loss_value = total_loss.cpu().detach().numpy()
@@ -198,7 +198,8 @@ def train_conv_lstm(cfg):
                 metrics_logs = {k: v.mean for k, v in metrics_meters.items()}
 
             # print(f"lr: {lr_scheduler.get_lr()}")
-            currlr = lr_scheduler.get_last_lr()[0] if lr_scheduler_flag else cfg.model.learning_rate
+            if cfg.model.use_lr_scheduler:
+                currlr = lr_scheduler.get_last_lr()[0] if lr_scheduler_flag else cfg.model.learning_rate
             print(f"epoch ({phase}): {epoch+1}/{cfg.model.max_epoch}, loss: {loss_meter.mean}, dice_loss: {metrics_logs['dice_loss']}, tc_loss: {metrics_logs['tc_loss']}, lr: {currlr}")
             wandb.log({phase: {\
                 'total_loss': loss_meter.mean, \
