@@ -21,13 +21,15 @@ model:
     input_channels: 3
     max_epoch: 100
 
-    learning_rate: 0.1
+    learning_rate: 0.01
     momentum: 0.9
 
     inferPatchSize: 128
     logImgPerEp: 100
     warmup_coef: 2
-    saveImgFlag: True
+
+    saveImgSglFlag: True # save single prediction image or not
+    saveImgArrFlag: True # save arranged image array or not
 
 experiment:
     note: dft

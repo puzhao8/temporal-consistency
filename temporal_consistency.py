@@ -228,7 +228,7 @@ def train_conv_lstm(cfg):
             # data_folder = Path(f"/home/omegazhangpzh/temporal-consistency/data/elephant_hill/{cfg.data.sat}_data")
             masks = conv_lstm_inference(model, data_folder, patchsize=cfg.model.inferPatchSize).squeeze()
 
-            predMaskDir = Path(cfg.experiment.output) / f"predMasks_ep{epoch}"
+            predMaskDir = Path(cfg.experiment.output) / f"predMasks_ep{epoch+1}"
             maskArrDir = Path(cfg.experiment.output) / "maskArr"
             print(f"maskArrDir: {predMaskDir}")
 
@@ -240,7 +240,7 @@ def train_conv_lstm(cfg):
             for idx in range(0, masks.shape[0]):
                 mask_list += [masks[idx,]]
 
-                if cfg.model.saveImgFlag:
+                if cfg.model.saveImgSglFlag:
                     imsave(predMaskDir / f"frame_{idx}.png", np.uint8(masks[idx,]*255))
 
 
@@ -248,7 +248,7 @@ def train_conv_lstm(cfg):
             wandb.log({f"predMasks/{cfg.data.name}_ep{epoch+1}": wandb.Image(maskArr)})
             # wandb.log({f"predMasks/{cfg.data.name}": plt.imshow(maskArr, cmap='hsv', vmin=1, vmax=1)})
 
-            if cfg.model.saveImgFlag:
+            if cfg.model.saveImgArrFlag:
                 imsave(maskArrDir / f"{cfg.data.name}_ep{epoch+1}.png", np.uint8(maskArr*255))
 
 
