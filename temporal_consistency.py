@@ -185,7 +185,7 @@ def train_conv_lstm(cfg):
                     total_loss.backward()
                     optimizer.step()
 
-                    if cfg.use_lr_scheduler:
+                    if cfg.model.use_lr_scheduler:
                         lr_scheduler.step()
 
                 total_loss_value = total_loss.cpu().detach().numpy()
