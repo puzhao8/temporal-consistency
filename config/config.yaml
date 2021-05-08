@@ -23,9 +23,10 @@ model:
 
     learning_rate: 0.1
     momentum: 0.9
+    lr_scheduler_flag: False
 
     inferPatchSize: 128
-    logImgPerEp: 100
+    logImgPerEp: 10
     warmup_coef: 2
 
     saveImgSglFlag: True # save single prediction image or not

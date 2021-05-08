@@ -183,7 +183,8 @@ def train_conv_lstm(cfg):
                 if 'train' == phase:
                     total_loss.backward()
                     optimizer.step()
-                    lr_scheduler.step()
+                    if cfg.model.lr_scheduler_flag: 
+                        lr_scheduler.step()
 
                 total_loss_value = total_loss.cpu().detach().numpy()
                 loss_meter.add(total_loss_value)
