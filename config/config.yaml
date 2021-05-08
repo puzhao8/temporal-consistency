@@ -23,7 +23,7 @@ model:
 
     learning_rate: 0.1
     momentum: 0.9
-    lr_scheduler_flag: False
+    lr_scheduler_flag: True
 
     inferPatchSize: 128
     logImgPerEp: 10
