@@ -24,7 +24,7 @@ def arrange_conv_lstm_predMasks(images):
     return img_arr
 
 
-def conv_lstm_inference(model, datafolder, patchsize=128):
+def conv_lstm_inference(model, datafolder, patchsize=128, logInputArr=False):
     # model.cpu()
     # patchsize = 128
 
@@ -37,6 +37,12 @@ def conv_lstm_inference(model, datafolder, patchsize=128):
         image = imread(datafolder / filename) / 255.0
         images = images + (image,)
     img_ts_arr = np.stack(images, axis=0)
+
+    # log input data -
+    if logInputArr:
+        data_name = os.split(datafolder)[-1] # H x W x C
+        inputArr = np.concatenate(images, axis=1)
+        wandb.log({f"inputData/{data_name}": wandb.Image(inputArr)})
 
     print(img_ts_arr.shape)
     T, H, W, C = img_ts_arr.shape
