@@ -35,9 +35,9 @@ def get_random_idx_tuples(seq_len=5, patchsize=128, samples_per_class=100):
 
     return burnedIdxTuple + unburnedIdxTuple
 
-data_folder = Path("E:\PyProjects/temporal-consistency\data\elephant_hill")
+data_folder = Path("E:\PyProjects/temporal-consistency\data\elephant_hill\s1_clean_100m")
 
-data_name = 'sentinel1'
+data_name = 's1'
 data_dir = data_folder / f"{data_name}_data"
 trainMask_dir = data_folder / f"{data_name}_mask"
 validMask_dir = data_folder / f"{data_name}_mask_fusion"
@@ -72,14 +72,13 @@ valid_mask_stack = np.stack(validMasks, axis=0)
 DATA = np.concatenate((image_stack, train_mask_stack, valid_mask_stack), axis=-1).transpose(0,3,1,2)
 
 patchsize = 16
-seq_len = 10
+seq_len = 5
 
 index_tuple_set = []
 for i in range(5):
     index_tuple_set += get_random_idx_tuples(seq_len=seq_len, patchsize=patchsize, samples_per_class=1000)
     # print(len(index_tuple_set))
     # print(index_tuple_set)
-
 
 
 def get_patches(idx, patchsize=patchsize):
@@ -90,7 +89,7 @@ def get_patches(idx, patchsize=patchsize):
 
 samples = np.stack(tuple(map(get_patches, index_tuple_set)), axis=0)
 n, l, c, w, w = samples.shape
-np.save(f"data/elephant_{data_name}_{n}x{l}x{c}x{w}x{w}.npy", samples)
+np.save(f"data/elephant_{data_name}_{n}x{l}x{c}x{w}x{w}_clean_100m.npy", samples)
 # print(half_patchsize)
 # train_mask_stack
 

@@ -50,20 +50,23 @@ if False:
 
 
 ## Assign S2 labelMask
-if False:
+if True:
     firms_full_path = eventPath / "virrs_modis_fusion_full"
-    sentinel2_dataDir = eventPath / "sentinel1_data"
-    sentinel2_maskDir = eventPath / "sentinel1_mask_fusion"
+    sentinel2_dataDir = eventPath / "s1_data_clean"
+    sentinel2_maskDir = eventPath / "s1_mask_clean_fusion"
     if not os.path.exists(sentinel2_maskDir): os.makedirs(sentinel2_maskDir)
 
     for filename in sorted(os.listdir(sentinel2_dataDir)):
         print(filename)
 
-        if 'sentinel2' in os.path.split(sentinel2_dataDir)[-1]:
+        if 's2' in os.path.split(sentinel2_dataDir)[-1]:
             s2_date = filename.split("_")[1]
         
-        if 'sentinel1' in os.path.split(sentinel2_dataDir)[-1]:
-            s2_date = filename.split("_")[0][:8]
+        if 's1' in os.path.split(sentinel2_dataDir)[-1]:
+            # s2_date = filename.split("_")[0][:8]
+            s2_date = filename.split("_")[1][:8]
+
+        print("s2_date: ", s2_date)
 
         if s2_date < firmsDateList[0]:
             mask = imread(firms_full_path / f"{firmsDateList[0]}_firms.B0.png")

@@ -136,7 +136,7 @@ kill $LOOPPID
 ```
 
 ### Submit Job Array
-sbatch --array=1-5 UNet_OptREF_woCAug.sh
+sbatch --array=1-5 tc-default.sh
 
 ## temporal-consistency-job
 ```shell
@@ -145,29 +145,28 @@ sbatch --array=1-5 UNet_OptREF_woCAug.sh
 #SBATCH -N 1
 #SBATCH --gpus-per-node=V100:1 
 #SBATCH -t 7-00:00:00
-#SBATCH --job-name UNet_OptREF_woCAug
-#SBATCH --output UNet_OptREF_woCAug.out
+#SBATCH --job-name tc_exp
+#SBATCH --output tc_exp.out
 
 git clone https://github.com/puzhao89/temporal-consistency.git $TMPDIR/temporal-consistency
 cd $TMPDIR/temporal-consistency
 
-rsync -a $SLURM_SUBMIT_DIR/Global_SAR4Wildfire_Dataset_V1 $TMPDIR/temporal-consistency/data/Historical_Wildfire_Dataset/
-rsync -a $SLURM_SUBMIT_DIR/Temporal_Progression_Dataset $TMPDIR/eo4wildfire/Data/
+rsync -a $SLURM_SUBMIT_DIR/data_for_snic/data $TMPDIR/temporal-consistency/
 
-ls $TMPDIR/eo4wildfire/Data/Historical_Wildfire_Dataset/
+ls $TMPDIR/temporal-consistency/data/
 
-exp_dir=$SLURM_SUBMIT_DIR/eo4wildfire_wandb_TV2
+exp_dir=$SLURM_SUBMIT_DIR/tc4wildfire_experiments/
 mkdir $exp_dir
 
 while sleep 20m
 do
-    rsync -a $TMPDIR/eo4wildfire/outputs/Experiments_Offline $exp_dir
+    rsync -a $TMPDIR/temporal-consistency/outputs/* $exp_dir
 done &
 LOOPPID=$!
 
-singularity exec --nv $SLURM_SUBMIT_DIR/PyTorch_v1.7.0-py3.sif python run_SegModel_wandb.py data.ref_mode=OptREF data.random_state=$SLURM_ARRAY_TASK_ID model.gamma=1 model.alpha=10 model.beta=0 data.train_val_split_rate=0.5 data.useDataWoCAug=True model.ARCH=UNet data.p_channelAug=0 experiment.exp_name=halfVal_CAug_0
+singularity exec --nv $SLURM_SUBMIT_DIR/PyTorch_v1.7.0-py3.sif python main.py
 
-rsync -a $TMPDIR/eo4wildfire/outputs/Experiments_Offline $exp_dir
+rsync -a $TMPDIR/temporal-consistency/outputs/* $exp_dir
 kill $LOOPPID
 ```
 
@@ -652,15 +651,20 @@ singularity cache clean
 
 ## KTH-VPN
 vpn.lan.kth.se
-- puzhao@kth.se
+- puzhao@kth.se <br>
 - bDwcx8kfq
 
 ## Connect to Server
-ssh puzhao@alvis1.c3se.chalmers.se 
+ssh puzhao@alvis1.c3se.chalmers.se <br>
 password: kth10044SUPR!
 
 ## Move Data
 scp -r E:\SAR4Wildfire_Dataset\Temporal_Progression_Dataset\US2020Creek_Progression_Data_20m puzhao@alvis1.c3se.chalmers.se:~/Temporal_Progression_Dataset/
+
+scp -r E:\PyProjects/temporal-consistency\data_for_snic puzhao@alvis1.c3se.chalmers.se:~/data_for_snic/
+
+## unzip
+tar -zxvf google-cloud-sdk-339.0.0-linux-x86_64.tar.gz
 
 
 

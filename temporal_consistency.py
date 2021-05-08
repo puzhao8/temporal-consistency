@@ -201,7 +201,7 @@ def train_conv_lstm(cfg):
     
         if epoch % 10 == 0:
             # model inference
-            data_folder = _CWD_ / "data" / "elephant_hill" / "sentinel2_data")
+            data_folder = _CWD_ / "data" / f"{cfg.dataname}" / f"{cfg.data.sat}_data"
 
             # data_folder = Path(f"/home/omegazhangpzh/temporal-consistency/data/elephant_hill/{cfg.data.sat}_data")
             masks = conv_lstm_inference(model, data_folder).squeeze()
