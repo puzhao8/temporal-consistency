@@ -38,7 +38,6 @@ nano [tc-dft].sh
 
 ### check git clone
 !git clone https://[username]:[password]@github.com/[username]/temporal-consistency.git main
-!git clone https://puzhao89:kth10044!@github.com/puzhao89/temporal-consistency.git main
 git clone https://github.com/puzhao89/temporal-consistency.git
 
 copy the following into [tc_fisrt].sh
