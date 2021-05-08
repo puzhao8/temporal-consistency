@@ -21,13 +21,20 @@ model:
     input_channels: 3
     max_epoch: 100
 
-    learning_rate: 0.01
+    learning_rate: 0.1
     momentum: 0.9
 
+    inferPatchSize: 128
+    logImgPerEp: 100
+    warmup_coef: 2
+
+    saveImgSglFlag: True # save single prediction image or not
+    saveImgArrFlag: True # save arranged image array or not
+
 experiment:
-    note: new
+    note: dft
     name: ${data.name}_${data.sat}_${model.name}_tc_${model.tc}_${experiment.note}
-    output: ./outputs/${data.name}_${model.name}_${now:%Y%m%dT%H%M%S} #${defaults.0.data}
+    output: ./outputs/${experiment.name}_${now:%Y%m%dT%H%M%S} #${defaults.0.data}
 
 hydra:
     run:

@@ -1,5 +1,6 @@
 "# temporal-consistency" 
 
+<<<<<<< HEAD
 
 ## gcp cp: https://cloud.google.com/storage/docs/gsutil/commands/cp#description
 gsutil -m cp -r E:\PyProjects/temporal-consistency\data/elephant_s1_9706x5x5x16x16_clean_100m.npy  gs://eo4wildfire/s1_clean_100m
@@ -96,3 +97,7 @@ scancel [JOBID]
 
 
 
+=======
+gsutil -m cp -r gs://eo4wildfire/s1_clean_100m /home/omegazhangpzh/temporal-consistency/data/
+gsutil -m cp -r gs://eo4wildfire/s1_clean_100m/elephant_s1_9706x5x5x16x16_clean_100m.npy /home/omegazhangpzh/temporal-consistency/data/
+>>>>>>> 115c63335c74e135d630c1fe52835b8eb18d96e5

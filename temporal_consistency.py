@@ -1,6 +1,7 @@
 import os, math, glob
 from pathlib import Path
 import numpy as np
+from imageio import imread, imsave
 import matplotlib.pyplot as plt
 import torch
 import torchvision
@@ -8,9 +9,9 @@ import torch.optim as optim
 import torch.nn as nn
 from torch.nn import functional as F
 from torch.utils.data import DataLoader
-import pytorch_lightning as pl
-from pytorch_lightning import Trainer
-from multiprocessing import Process
+# import pytorch_lightning as pl
+# from pytorch_lightning import Trainer
+# from multiprocessing import Process
 
 from models.seq2seq_ConvLSTM import EncoderDecoderConvLSTM
 
@@ -26,6 +27,7 @@ from evaluate import conv_lstm_inference
 
 import wandb
 import hydra
+
 
 from torch.optim.lr_scheduler import LambdaLR
 def get_cosine_schedule_with_warmup(optimizer,
@@ -53,15 +55,15 @@ def get_cosine_schedule_with_warmup(optimizer,
     return LambdaLR(optimizer, _lr_lambda, last_epoch)
 
 # borrowed from: https://github.com/SebastianHafner/urban_dl/blob/master/experiment_manager/loss.py  
-def soft_dice_loss(input:torch.Tensor, target:torch.Tensor):
+def soft_dice_loss(input:torch.Tensor, target:torch.Tensor, eps=1):
     input_sigmoid = torch.sigmoid(input)
-    eps = 1e-6
+    # eps = 1e-6
 
     iflat = input_sigmoid.flatten()
     tflat = target.flatten()
     intersection = (iflat * tflat).sum()
 
-    return 1 - ((2. * intersection) /
+    return 1 - ((2. * intersection + eps) /
                 (iflat.sum() + tflat.sum() + eps))
 
 def temporal_consistency_loss(input, y):
@@ -89,14 +91,16 @@ def get_dataloader(cfg):
         return dataloader
 
     if cfg.data.name == 'elephant':
+        _CWD_ = Path(hydra.utils.get_original_cwd()) 
         # DATA = np.load(Path(_CWD_ / "data" / "elephant_patchsize_16.npy")
         if cfg.data.sat == 's2':
-            npyname = glob.glob(str(_CWD_ / "data/elephant_s2_*.npy"))[0]
+            npy_url = glob.glob(str(_CWD_ / "data/elephant_s2_*.npy"))[0]
         
         if cfg.data.sat == 's1':
-            npyname = glob.glob(str(_CWD_ / "data/elephant_s1_*.npy"))[0]
+            npy_url = glob.glob(str(_CWD_ / "data/elephant_s1_*clean_100m.npy"))[0]
 
-        DATA = np.load(npyname)
+        print(f"npyname: {os.path.split(npy_url)[-1]}")
+        DATA = np.load(npy_url)
 
         inputs = DATA[:, :, :3, ...]
         labels = DATA[:, :, 3:4, ...]
@@ -120,6 +124,7 @@ def get_dataloader(cfg):
 
 
 def train_conv_lstm(cfg):
+
     _CWD_ = Path(hydra.utils.get_original_cwd()) 
 
     if torch.cuda.is_available():
@@ -137,13 +142,14 @@ def train_conv_lstm(cfg):
 
     per_epoch_steps = 7000 // cfg.model.batch_size
     total_training_steps = cfg.model.max_epoch * per_epoch_steps
-    warmup_steps = 0 * per_epoch_steps
+    warmup_steps = cfg.model.warmup_coef * per_epoch_steps
     lr_scheduler = get_cosine_schedule_with_warmup(optimizer, warmup_steps, total_training_steps)
     
     soft_dice_loss.__name__ = 'dice_loss'
     temporal_consistency_loss.__name__ = 'tc_loss'
     metrics = [soft_dice_loss, temporal_consistency_loss]
 
+    tcloss_valid_his = []
     for epoch in range(cfg.model.max_epoch):
         for phase in ['train', 'valid']:
 
@@ -189,29 +195,61 @@ def train_conv_lstm(cfg):
                 metrics_logs = {k: v.mean for k, v in metrics_meters.items()}
 
             # print(f"lr: {lr_scheduler.get_lr()}")
-            print(f"epoch ({phase}): {epoch}/{cfg.model.max_epoch}, loss: {loss_meter.mean}, dice_loss: {metrics_logs['dice_loss']}, tc_loss: {metrics_logs['tc_loss']}, lr: {lr_scheduler.get_lr()[0]}")
+            print(f"epoch ({phase}): {epoch+1}/{cfg.model.max_epoch}, loss: {loss_meter.mean}, dice_loss: {metrics_logs['dice_loss']}, tc_loss: {metrics_logs['tc_loss']}, lr: {lr_scheduler.get_last_lr()[0]}")
             wandb.log({phase: {\
                 'total_loss': loss_meter.mean, \
                 'dice_loss': metrics_logs['dice_loss'],\
                 'tc_loss': metrics_logs['tc_loss']}, \
-                'lr': lr_scheduler.get_lr()[0], \
+                'lr': lr_scheduler.get_last_lr()[0], \
                 'epoch': epoch+1})
 
-
-    
-        if epoch % 10 == 0:
-            # model inference
-            data_folder = _CWD_ / "data" / f"{cfg.dataname}" / f"{cfg.data.sat}_data"
-
-            # data_folder = Path(f"/home/omegazhangpzh/temporal-consistency/data/elephant_hill/{cfg.data.sat}_data")
-            masks = conv_lstm_inference(model, data_folder).squeeze()
-
-            mask_list = [masks[idx,] for idx in range(0, masks.shape[0])]
-            maskArr = np.concatenate(tuple(mask_list), axis=1)
-            wandb.log({f"predMasks/{cfg.data.name}_ep{epoch}": wandb.Image(maskArr)})
-            # wandb.log({f"predMasks/{cfg.data.name}": plt.imshow(maskArr, cmap='hsv', vmin=1, vmax=1)})
+            if 'valid'==phase: 
+                tcloss_valid_his += [metrics_logs['tc_loss']]
 
         
+        tcloss_valid_mean = sum(tcloss_valid_his[:-1]) / (len(tcloss_valid_his[:-1]) + 1e-6)
+        anamoly = abs(tcloss_valid_his[-1] - tcloss_valid_mean)
+        
+
+        anamolyFlag = False
+        if (epoch>10) and (anamoly>0.15):
+            anamolyFlag = True
+            print(f"epoch: {epoch}, anamolyFlag: {anamolyFlag}")
+            tcloss_valid_his = tcloss_valid_his[:-1]
+
+        wandb.log({"anamoly": anamoly, "anamolyFlag": 1 if anamolyFlag else 0, 'epoch': epoch+1})
+        
+        if len(tcloss_valid_his) > 5: tcloss_valid_his = tcloss_valid_his[-5:]
+
+        if (epoch < 5) or ((epoch+1) % cfg.model.logImgPerEp == 0) or anamolyFlag:
+            # model inference
+            data_folder = _CWD_ / "data" / f"{cfg.data.name}" / f"{cfg.data.sat}_data"
+
+            # data_folder = Path(f"/home/omegazhangpzh/temporal-consistency/data/elephant_hill/{cfg.data.sat}_data")
+            masks = conv_lstm_inference(model, data_folder, patchsize=cfg.model.inferPatchSize).squeeze()
+
+            predMaskDir = Path(cfg.experiment.output) / f"predMasks_ep{epoch+1}"
+            maskArrDir = Path(cfg.experiment.output) / "maskArr"
+            print(f"maskArrDir: {predMaskDir}")
+
+            for saveDir in [predMaskDir, maskArrDir]:
+                if not os.path.exists(saveDir): os.makedirs(saveDir)
+        
+            # mask_list = [masks[idx,] for idx in range(0, masks.shape[0])]
+            mask_list = []
+            for idx in range(0, masks.shape[0]):
+                mask_list += [masks[idx,]]
+
+                if cfg.model.saveImgSglFlag:
+                    imsave(predMaskDir / f"frame_{idx}.png", np.uint8(masks[idx,]*255))
+
+
+            maskArr = np.concatenate(tuple(mask_list), axis=1)
+            wandb.log({f"predMasks/{cfg.data.name}_ep{epoch+1}": wandb.Image(maskArr)})
+            # wandb.log({f"predMasks/{cfg.data.name}": plt.imshow(maskArr, cmap='hsv', vmin=1, vmax=1)})
+
+            if cfg.model.saveImgArrFlag:
+                imsave(maskArrDir / f"{cfg.data.name}_ep{epoch+1}.png", np.uint8(maskArr*255))
 
 
 
