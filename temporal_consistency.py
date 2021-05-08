@@ -9,9 +9,9 @@ import torch.optim as optim
 import torch.nn as nn
 from torch.nn import functional as F
 from torch.utils.data import DataLoader
-import pytorch_lightning as pl
-from pytorch_lightning import Trainer
-from multiprocessing import Process
+# import pytorch_lightning as pl
+# from pytorch_lightning import Trainer
+# from multiprocessing import Process
 
 from models.seq2seq_ConvLSTM import EncoderDecoderConvLSTM
 
