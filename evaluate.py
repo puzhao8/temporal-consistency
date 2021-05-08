@@ -24,9 +24,9 @@ def arrange_conv_lstm_predMasks(images):
     return img_arr
 
 
-def conv_lstm_inference(model, datafolder):
+def conv_lstm_inference(model, datafolder, patchsize=128):
     # model.cpu()
-    patchsize = 128
+    # patchsize = 128
 
     input_patchsize = 2 * patchsize
     padSize = int(patchsize/2)
