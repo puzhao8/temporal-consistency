@@ -90,14 +90,13 @@ def get_dataloader(cfg):
 
         return dataloader
 
-    if cfg.data.name == 'elephant':
+    else:
+        
         _CWD_ = Path(hydra.utils.get_original_cwd()) 
         # DATA = np.load(Path(_CWD_ / "data" / "elephant_patchsize_16.npy")
-        if cfg.data.sat == 's2':
-            npy_url = glob.glob(str(_CWD_ / "data/elephant_s2_*.npy"))[0]
+    
+        npy_url = glob.glob(str(_CWD_ / f"data/{cfg.data.name}_{cfg.data.folder}*{cfg.data.note}.npy"))[0]
         
-        if cfg.data.sat == 's1':
-            npy_url = glob.glob(str(_CWD_ / "data/elephant_s1_*clean_100m.npy"))[0]
 
         print(f"npyname: {os.path.split(npy_url)[-1]}")
         DATA = np.load(npy_url)
@@ -227,7 +226,7 @@ def train_conv_lstm(cfg):
 
         if (epoch < 5) or ((epoch+1) % cfg.model.logImgPerEp == 0) or anamolyFlag:
             # model inference
-            data_folder = _CWD_ / "data" / f"{cfg.data.name}" / f"{cfg.data.sat}_data"
+            data_folder = _CWD_ / "data" / f"{cfg.data.name}" / f"{cfg.data.folder}"
 
             # data_folder = Path(f"/home/omegazhangpzh/temporal-consistency/data/elephant_hill/{cfg.data.sat}_data")
             masks = conv_lstm_inference(model, data_folder, patchsize=cfg.model.inferPatchSize).squeeze()

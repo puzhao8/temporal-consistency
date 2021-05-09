@@ -50,7 +50,7 @@ if False:
 
 
 ## Assign S2 labelMask
-if True:
+if False:
     firms_full_path = eventPath / "virrs_modis_fusion_full"
     sentinel2_dataDir = eventPath / "s1_data_clean"
     sentinel2_maskDir = eventPath / "s1_mask_clean_fusion"

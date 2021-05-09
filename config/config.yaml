@@ -5,8 +5,10 @@ project:
     name: temporal-consistency
 
 data:
-    name: elephant # rand
-    sat: s2
+    name: Ljusdals # rand, Ljusdals, elephant
+    folder: s1_data_kmap
+    note: '20m'
+    
     train_size: 0.7
     
 
@@ -34,7 +36,7 @@ model:
 
 experiment:
     note: bal
-    name: ${data.name}_${data.sat}_${model.name}_tc_${model.tc}_${experiment.note}
+    name: ${data.name}_${data.folder}_${model.name}_tc_${model.tc}_${experiment.note}
     output: ./outputs/${experiment.name}_${now:%Y%m%dT%H%M%S} #${defaults.0.data}
 
 hydra:
