@@ -28,6 +28,11 @@ from evaluate import conv_lstm_inference
 import wandb
 import hydra
 
+# TV-loss
+import kornia
+tv_loss = kornia.losses.TotalVariation()
+tv_loss.__name__ = 'tv_loss'
+
 
 from torch.optim.lr_scheduler import LambdaLR
 def get_cosine_schedule_with_warmup(optimizer,
@@ -65,6 +70,18 @@ def soft_dice_loss(input:torch.Tensor, target:torch.Tensor, eps=1):
 
     return 1 - ((2. * intersection + eps) /
                 (iflat.sum() + tflat.sum() + eps))
+
+def soft_specificity_loss(input:torch.Tensor, target:torch.Tensor, eps=1):
+    input_sigmoid = torch.sigmoid(input)
+    # eps = 1e-6
+
+    iflat = input_sigmoid.flatten()
+    tflat = target.flatten()
+    
+    total_neg = (1 - tflat).sum()
+    true_neg = ((1 - tflat) * (1 - iflat)).sum()
+
+    return 1 - ((true_neg + eps) / (total_neg + eps))
 
 def temporal_consistency_loss(input, y):
     output = torch.sigmoid(input)
@@ -172,10 +189,11 @@ def train_conv_lstm(cfg):
                 output = model.forward(x, future_seq=cfg.model.future_seq)
                 
                 tc_loss = temporal_consistency_loss(output, y)
-                dice_loss = soft_dice_loss(output, y)
+                # dice_loss = soft_dice_loss(output, y)
+                dice_loss = soft_specificity_loss(output, y)
+                # tv_loss_ = 1e-5 * torch.mean(tv_loss(y_pred))
 
                 total_loss =  (1-cfg.model.tc) * dice_loss + cfg.model.tc * tc_loss
-
                 # print(f"epoch: {epoch}, loss: {total_loss}, tc_loss: {tc_loss}")
 
                 # print(loss.shape)

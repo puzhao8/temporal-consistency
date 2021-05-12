@@ -1,6 +1,7 @@
 data/*
 data_for_snic/*
 data/elephant_hill/*
-materials/
-outputs/
+materials/*
+outputs/*
 README_local_only.md
+snic_results/**
