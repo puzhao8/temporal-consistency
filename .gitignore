@@ -6,3 +6,4 @@ outputs/*
 README_local_only.md
 snic_results/**
 swin-transformer-pytorch/*
+Swin-Transformer-Semantic-Segmentation/*
