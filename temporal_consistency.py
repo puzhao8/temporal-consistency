@@ -163,8 +163,9 @@ def train_conv_lstm(cfg):
         lr_scheduler = get_cosine_schedule_with_warmup(optimizer, warmup_steps, total_training_steps)
     
     soft_dice_loss.__name__ = 'dice_loss'
+    soft_specificity_loss.__name = 'spec_loss'
     temporal_consistency_loss.__name__ = 'tc_loss'
-    metrics = [soft_dice_loss, temporal_consistency_loss]
+    metrics = [soft_dice_loss, temporal_consistency_loss, soft_specificity_loss]
 
     tcloss_valid_his = []
     for epoch in range(cfg.model.max_epoch):
@@ -190,7 +191,7 @@ def train_conv_lstm(cfg):
                 
                 tc_loss = temporal_consistency_loss(output, y)
                 # dice_loss = soft_dice_loss(output, y)
-                dice_loss = soft_specificity_loss(output, y)
+                dice_loss = soft_dice_loss(output, y)
                 # tv_loss_ = 1e-5 * torch.mean(tv_loss(y_pred))
 
                 total_loss =  (1-cfg.model.tc) * dice_loss + cfg.model.tc * tc_loss
@@ -220,6 +221,7 @@ def train_conv_lstm(cfg):
             wandb.log({phase: {\
                 'total_loss': loss_meter.mean, \
                 'dice_loss': metrics_logs['dice_loss'],\
+                'spec_loss': metrics_logs['spec_loss'],\
                 'tc_loss': metrics_logs['tc_loss']}, \
                 'lr': currlr, \
                 'epoch': epoch+1})
