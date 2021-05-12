@@ -163,7 +163,7 @@ def train_conv_lstm(cfg):
         lr_scheduler = get_cosine_schedule_with_warmup(optimizer, warmup_steps, total_training_steps)
     
     soft_dice_loss.__name__ = 'dice_loss'
-    soft_specificity_loss.__name = 'spec_loss'
+    soft_specificity_loss.__name__ = 'spec_loss'
     temporal_consistency_loss.__name__ = 'tc_loss'
     metrics = [soft_dice_loss, temporal_consistency_loss, soft_specificity_loss]
 
