@@ -191,7 +191,7 @@ def train_conv_lstm(cfg):
                 
                 tc_loss = temporal_consistency_loss(output, y)
                 # dice_loss = soft_dice_loss(output, y)
-                dice_loss = soft_dice_loss(output, y)
+                dice_loss = soft_specificity_loss(output, y)
                 # tv_loss_ = 1e-5 * torch.mean(tv_loss(y_pred))
 
                 total_loss =  (1-cfg.model.tc) * dice_loss + cfg.model.tc * tc_loss
