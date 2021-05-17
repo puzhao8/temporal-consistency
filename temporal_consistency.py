@@ -71,6 +71,7 @@ def soft_dice_loss(input:torch.Tensor, target:torch.Tensor, eps=1):
     return 1 - ((2. * intersection + eps) /
                 (iflat.sum() + tflat.sum() + eps))
 
+# refer to https://blog.medisolv.com/articles/evaluating-the-power-of-predictive-analytics-statistics-basics-for-clinicians-and-quality-professionals
 def soft_specificity_loss(input:torch.Tensor, target:torch.Tensor, eps=1):
     input_sigmoid = torch.sigmoid(input)
     # eps = 1e-6
@@ -143,11 +144,8 @@ def train_conv_lstm(cfg):
 
     _CWD_ = Path(hydra.utils.get_original_cwd()) 
 
-    if torch.cuda.is_available():
-        DEVICE = 'cuda'
-    else:
-        DEVICE = 'cpu'
-    
+    DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
+
     dataloader = get_dataloader(cfg)
     model = EncoderDecoderConvLSTM(nf=cfg.model.number_filters, in_chan=cfg.model.input_channels)
     model.to(DEVICE)
@@ -191,7 +189,7 @@ def train_conv_lstm(cfg):
                 
                 tc_loss = temporal_consistency_loss(output, y)
                 # dice_loss = soft_dice_loss(output, y)
-                dice_loss = soft_specificity_loss(output, y)
+                dice_loss = soft_dice_loss(output, y)
                 # tv_loss_ = 1e-5 * torch.mean(tv_loss(y_pred))
 
                 total_loss =  (1-cfg.model.tc) * dice_loss + cfg.model.tc * tc_loss

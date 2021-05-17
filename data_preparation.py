@@ -35,10 +35,10 @@ def get_random_idx_tuples(seq_len=5, patchsize=128, samples_per_class=100):
 
     return burnedIdxTuple + unburnedIdxTuple
 
-data_folder = Path("E:\PyProjects/temporal-consistency\data\elephant_hill\s1_clean_100m")
+data_folder = Path("E:\PyProjects/temporal-consistency\data\elephant")
 
-data_name = 's1'
-data_dir = data_folder / f"{data_name}_data"
+data_name = 's2_km'
+data_dir = data_folder / f"s2_data"
 trainMask_dir = data_folder / f"{data_name}_mask"
 validMask_dir = data_folder / f"{data_name}_mask_fusion"
 

@@ -5,9 +5,9 @@ project:
     name: temporal-consistency
 
 data:
-    name: Ljusdals # rand, Ljusdals, elephant
-    folder: s1_data_kmap
-    note: '20m'
+    name: elephant # rand, Ljusdals, elephant
+    folder: s2_kmap
+    note: 100m
     
     train_size: 0.7
     
@@ -16,7 +16,7 @@ model:
     name: ConvLSTM
     future_seq: 0
 
-    tc: 0.5 # total_loss =  (1-cfg.model.tc) * dice_loss + cfg.model.tc * tc_loss
+    tc: 0 # total_loss =  (1-cfg.model.tc) * dice_loss + cfg.model.tc * tc_loss
 
     batch_size: 128
     number_filters: 64

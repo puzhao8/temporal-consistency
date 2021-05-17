@@ -7,4 +7,7 @@ https://github.com/SwinTransformer/Swin-Transformer-Semantic-Segmentation
 
 [UPerNet](https://arxiv.org/pdf/1807.10221.pdf)
 
+[LABEL SUPER-RESOLUTION NETWORKS](https://openreview.net/pdf?id=rkxwShA9Ym)
+
+
 

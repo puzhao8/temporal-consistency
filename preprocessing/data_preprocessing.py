@@ -17,7 +17,7 @@ def get_dateRange(start_day, end_day):
 
 
 
-eventPath = Path("E:\PyProjects/temporal-consistency\data\elephant_hill")
+eventPath = Path("E:\PyProjects/temporal-consistency\data\elephant")
 firms_full_path = eventPath / "virrs_modis_fusion_full"
 firmsDateList = [firmsName[:8] for firmsName in sorted(os.listdir(firms_full_path))]
 
@@ -50,10 +50,10 @@ if False:
 
 
 ## Assign S2 labelMask
-if False:
-    firms_full_path = eventPath / "virrs_modis_fusion_full"
-    sentinel2_dataDir = eventPath / "s1_data_clean"
-    sentinel2_maskDir = eventPath / "s1_mask_clean_fusion"
+if True:
+    firms_full_path = eventPath / "viirs_full"
+    sentinel2_dataDir = eventPath / "s1_kmap"
+    sentinel2_maskDir = eventPath / "s1_kmap_mask"
     if not os.path.exists(sentinel2_maskDir): os.makedirs(sentinel2_maskDir)
 
     for filename in sorted(os.listdir(sentinel2_dataDir)):
@@ -63,8 +63,8 @@ if False:
             s2_date = filename.split("_")[1]
         
         if 's1' in os.path.split(sentinel2_dataDir)[-1]:
-            # s2_date = filename.split("_")[0][:8]
-            s2_date = filename.split("_")[1][:8]
+            s2_date = filename.split("_")[0][:8]
+            # s2_date = filename.split("_")[1][:8]
 
         print("s2_date: ", s2_date)
 
