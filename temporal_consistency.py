@@ -193,7 +193,7 @@ def train_conv_lstm(cfg):
                 # tv_loss_ = 1e-5 * torch.mean(tv_loss(y_pred))
 
                 total_dice_loss = (1-cfg.model.hr) * dice_loss_lr + cfg.model.hr * dice_loss_hr
-                total_loss =  (1-cfg.model.tc) * total_dice_loss + cfg.model.tc * tc_loss
+                total_loss = total_dice_loss + cfg.model.tc * tc_loss
                 # print(f"epoch: {epoch}, loss: {total_loss}, tc_loss: {tc_loss}")
 
                 # print(loss.shape)
