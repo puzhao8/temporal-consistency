@@ -220,7 +220,7 @@ def train_conv_lstm(cfg):
                 for metric_fn in metrics:
                     metric_value = metric_fn(output, y_hr).cpu().detach().numpy()
                     metrics_meters[metric_fn.__name__].add(metric_value)
-                metrics_logs = {f"{k}_hr": v.mean for k, v in metrics_meters.items()}
+                metrics_logs = {k: v.mean for k, v in metrics_meters.items()}
 
                 for metric_fn in metrics:
                     metric_value = metric_fn(output, y_lr).cpu().detach().numpy()
@@ -232,9 +232,9 @@ def train_conv_lstm(cfg):
             print(f"epoch ({phase}): {epoch+1}/{cfg.model.max_epoch}, loss: {loss_meter.mean}, dice_loss: {metrics_logs['dice_loss']}, tc_loss: {metrics_logs['tc_loss']}, lr: {currlr}")
             wandb.log({phase: {\
                 'total_loss': loss_meter.mean, \
-                'tc_loss': metrics_logs['tc_loss_hr']}, \
-                'mse_loss_hr': metrics_logs['mse_loss_hr'],\
-                'dice_loss_hr': metrics_logs['dice_loss_hr'],\
+                'tc_loss': metrics_logs['tc_loss']}, \
+                'mse_loss_hr': metrics_logs['mse_loss'],\
+                'dice_loss_hr': metrics_logs['dice_loss'],\
                 'mse_loss_lr': metrics_logs['mse_loss_lr'],\
                 'dice_loss_lr': metrics_logs['dice_loss_lr'],\
                 'lr': currlr, \
