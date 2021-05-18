@@ -34,6 +34,7 @@ class ConvLSTMCell(nn.Module):
                               kernel_size=self.kernel_size,
                               padding=self.padding,
                               bias=self.bias)
+        normal_custom(self.conv)
 
     def forward(self, input_tensor, cur_state):
         h_cur, c_cur = cur_state
@@ -56,3 +57,13 @@ class ConvLSTMCell(nn.Module):
         height, width = image_size
         return (torch.zeros(batch_size, self.hidden_dim, height, width, device=self.conv.weight.device),
                 torch.zeros(batch_size, self.hidden_dim, height, width, device=self.conv.weight.device))
+
+def _no_grad_normal_(tensor, mean, std):
+    with torch.no_grad():
+        return tensor.normal_(mean, std)
+
+
+def normal_custom(w):
+    fan_out, fan_in = w.shape[:2]
+    std = float(fan_in + fan_out) / float(fan_in * fan_out)
+    return _no_grad_normal_(w, 0., std)
