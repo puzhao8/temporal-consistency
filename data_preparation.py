@@ -38,10 +38,9 @@ def get_random_idx_tuples(seq_len=5, patchsize=128, samples_per_class=100):
 data_folder = Path("E:\PyProjects/temporal-consistency\data\elephant")
 
 data_name = 's2_km'
-data_dir = data_folder / f"s2_data"
+data_dir = data_folder / f"{data_name}_data"
 trainMask_dir = data_folder / f"{data_name}_mask"
 validMask_dir = data_folder / f"{data_name}_mask_fusion"
-
 
 trainMasks = tuple()
 validMasks = tuple()
