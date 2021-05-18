@@ -84,13 +84,13 @@ def soft_specificity_loss(input:torch.Tensor, target:torch.Tensor, eps=1):
 
     return 1 - ((true_neg + eps) / (total_neg + eps))
 
-def temporal_consistency_loss(input, y):
-    output = torch.sigmoid(input)
+def temporal_consistency_loss(output, y=0):
+    output = torch.sigmoid(output)
     temporal_consistency_loss = 0
-    for t in range(y.shape[1]-1):
-        temporal_consistency_loss += nn.MSELoss()(output[:,t,...], y[:,t,...])
+    for t in range(output.shape[1]-1):
+        temporal_consistency_loss += nn.MSELoss()(output[:,t,...], output[:,t+1,...])
     
-    return temporal_consistency_loss / (y.shape[1]-1) 
+    return temporal_consistency_loss / (output.shape[1]-1) 
 
 
 def get_dataloader(cfg):
@@ -120,8 +120,7 @@ def get_dataloader(cfg):
         DATA = np.load(npy_url)
 
         inputs = DATA[:, :, :3, ...]
-        labels = DATA[:, :, 3:4, ...]
-        labels_ = DATA[:, :, -1:, ...]
+        labels = DATA[:, :, -2:, ...]
 
         from sklearn.model_selection import train_test_split
         train_X, valid_X, train_y, valid_y = train_test_split(inputs, labels, train_size=cfg.data.train_size, random_state=42)   
@@ -163,7 +162,7 @@ def train_conv_lstm(cfg):
     soft_dice_loss.__name__ = 'dice_loss'
     soft_specificity_loss.__name__ = 'spec_loss'
     temporal_consistency_loss.__name__ = 'tc_loss'
-    metrics = [soft_dice_loss, temporal_consistency_loss, soft_specificity_loss]
+    metrics = [soft_dice_loss, temporal_consistency_loss]
 
     tcloss_valid_his = []
     for epoch in range(cfg.model.max_epoch):
@@ -179,7 +178,7 @@ def train_conv_lstm(cfg):
                 """ batch update """
             
                 # get the inputs; data is a list of [inputs, labels]
-                x, y = x.to(DEVICE), y.to(DEVICE)
+                x, y_lr, y_hr = x.to(DEVICE), y[:,:,-2:-1,...].to(DEVICE), y[:,:,-1:,...].to(DEVICE)
 
                 # zero the parameter gradients
                 optimizer.zero_grad()
@@ -187,12 +186,14 @@ def train_conv_lstm(cfg):
                 # forward + backward + optimize
                 output = model.forward(x, future_seq=cfg.model.future_seq)
                 
-                tc_loss = temporal_consistency_loss(output, y)
+                tc_loss = temporal_consistency_loss(output)
                 # dice_loss = soft_dice_loss(output, y)
-                dice_loss = soft_dice_loss(output, y)
+                dice_loss_lr = soft_dice_loss(output, y_lr)
+                dice_loss_hr = soft_dice_loss(output, y_hr)
                 # tv_loss_ = 1e-5 * torch.mean(tv_loss(y_pred))
 
-                total_loss =  (1-cfg.model.tc) * dice_loss + cfg.model.tc * tc_loss
+                total_dice_loss = (1-cfg.model.hr) * dice_loss_lr + cfg.model.hr * dice_loss_hr
+                total_loss =  (1-cfg.model.tc) * total_dice_loss + cfg.model.tc * tc_loss
                 # print(f"epoch: {epoch}, loss: {total_loss}, tc_loss: {tc_loss}")
 
                 # print(loss.shape)
@@ -209,7 +210,7 @@ def train_conv_lstm(cfg):
 
                 # update metrics logs
                 for metric_fn in metrics:
-                    metric_value = metric_fn(output, y).cpu().detach().numpy()
+                    metric_value = metric_fn(output, y_hr).cpu().detach().numpy()
                     metrics_meters[metric_fn.__name__].add(metric_value)
                 metrics_logs = {k: v.mean for k, v in metrics_meters.items()}
 
@@ -219,7 +220,6 @@ def train_conv_lstm(cfg):
             wandb.log({phase: {\
                 'total_loss': loss_meter.mean, \
                 'dice_loss': metrics_logs['dice_loss'],\
-                'spec_loss': metrics_logs['spec_loss'],\
                 'tc_loss': metrics_logs['tc_loss']}, \
                 'lr': currlr, \
                 'epoch': epoch+1})
