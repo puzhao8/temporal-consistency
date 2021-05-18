@@ -1,5 +1,6 @@
 import torch.nn as nn
 import torch
+import numpy as np
 
 
 class ConvLSTMCell(nn.Module):
@@ -34,7 +35,7 @@ class ConvLSTMCell(nn.Module):
                               kernel_size=self.kernel_size,
                               padding=self.padding,
                               bias=self.bias)
-        normal_custom(self.conv)
+        normal_custom(self.conv.weight)
 
     def forward(self, input_tensor, cur_state):
         h_cur, c_cur = cur_state
@@ -65,5 +66,5 @@ def _no_grad_normal_(tensor, mean, std):
 
 def normal_custom(w):
     fan_out, fan_in = w.shape[:2]
-    std = float(fan_in + fan_out) / float(fan_in * fan_out)
+    std = np.sqrt(1 / np.abs(fan_in - fan_out))
     return _no_grad_normal_(w, 0., std)
