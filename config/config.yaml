@@ -6,7 +6,7 @@ project:
 
 data:
     name: elephant # rand, Ljusdals, elephant
-    folder: s2_kmap
+    folder: s2_km
     note: 100m
     
     train_size: 0.7
