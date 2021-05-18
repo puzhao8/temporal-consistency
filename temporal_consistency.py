@@ -225,7 +225,8 @@ def train_conv_lstm(cfg):
                 for metric_fn in metrics:
                     metric_value = metric_fn(output, y_lr).cpu().detach().numpy()
                     metrics_meters[metric_fn.__name__].add(metric_value)
-                metrics_logs = {f"{k}_lr": v.mean for k, v in metrics_meters.items()}
+                metrics_logs_lr = {f"{k}_lr": v.mean for k, v in metrics_meters.items()}
+                metrics_logs.update(metrics_logs_lr)
 
             # print(f"lr: {lr_scheduler.get_lr()}")
             currlr = lr_scheduler.get_last_lr()[0] if cfg.model.use_lr_scheduler else cfg.model.learning_rate
