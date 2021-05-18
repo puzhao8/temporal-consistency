@@ -92,6 +92,13 @@ def temporal_consistency_loss(output, y=0):
     
     return temporal_consistency_loss / (output.shape[1]-1) 
 
+def mse_loss(input, target):
+    input_sigmoid = torch.sigmoid(input)
+    iflat = input_sigmoid.flatten()
+    tflat = target.flatten()
+
+    return nn.MSELoss()(iflat, tflat) / len(tflat)
+
 
 def get_dataloader(cfg):
     
@@ -162,7 +169,8 @@ def train_conv_lstm(cfg):
     soft_dice_loss.__name__ = 'dice_loss'
     soft_specificity_loss.__name__ = 'spec_loss'
     temporal_consistency_loss.__name__ = 'tc_loss'
-    metrics = [soft_dice_loss, temporal_consistency_loss]
+    mse_loss.__name__ = 'mse_loss'
+    metrics = [soft_dice_loss, temporal_consistency_loss, mse_loss]
 
     tcloss_valid_his = []
     for epoch in range(cfg.model.max_epoch):
@@ -189,7 +197,7 @@ def train_conv_lstm(cfg):
                 tc_loss = temporal_consistency_loss(output)
                 # dice_loss = soft_dice_loss(output, y)
                 dice_loss_lr = soft_dice_loss(output, y_lr)
-                dice_loss_hr = soft_dice_loss(output, y_hr)
+                dice_loss_hr = 10 * mse_loss(output, y_hr)
                 # tv_loss_ = 1e-5 * torch.mean(tv_loss(y_pred))
 
                 total_dice_loss = (1-cfg.model.hr) * dice_loss_lr + cfg.model.hr * dice_loss_hr
@@ -212,22 +220,29 @@ def train_conv_lstm(cfg):
                 for metric_fn in metrics:
                     metric_value = metric_fn(output, y_hr).cpu().detach().numpy()
                     metrics_meters[metric_fn.__name__].add(metric_value)
-                metrics_logs = {k: v.mean for k, v in metrics_meters.items()}
+                metrics_logs = {f"{k}_hr": v.mean for k, v in metrics_meters.items()}
+
+                for metric_fn in metrics:
+                    metric_value = metric_fn(output, y_lr).cpu().detach().numpy()
+                    metrics_meters[metric_fn.__name__].add(metric_value)
+                metrics_logs = {f"{k}_lr": v.mean for k, v in metrics_meters.items()}
 
             # print(f"lr: {lr_scheduler.get_lr()}")
             currlr = lr_scheduler.get_last_lr()[0] if cfg.model.use_lr_scheduler else cfg.model.learning_rate
             print(f"epoch ({phase}): {epoch+1}/{cfg.model.max_epoch}, loss: {loss_meter.mean}, dice_loss: {metrics_logs['dice_loss']}, tc_loss: {metrics_logs['tc_loss']}, lr: {currlr}")
             wandb.log({phase: {\
                 'total_loss': loss_meter.mean, \
-                'dice_loss': metrics_logs['dice_loss'],\
-                'tc_loss': metrics_logs['tc_loss']}, \
+                'tc_loss': metrics_logs['tc_loss_hr']}, \
+                'mse_loss_hr': metrics_logs['mse_loss_hr'],\
+                'dice_loss_hr': metrics_logs['dice_loss_hr'],\
+                'mse_loss_lr': metrics_logs['mse_loss_lr'],\
+                'dice_loss_lr': metrics_logs['dice_loss_lr'],\
                 'lr': currlr, \
                 'epoch': epoch+1})
 
             if 'valid'==phase: 
                 tcloss_valid_his += [metrics_logs['tc_loss']]
 
-        
         tcloss_valid_mean = sum(tcloss_valid_his[:-1]) / (len(tcloss_valid_his[:-1]) + 1e-6)
         anamoly = abs(tcloss_valid_his[-1] - tcloss_valid_mean)
         
