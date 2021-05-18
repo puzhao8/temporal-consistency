@@ -146,7 +146,7 @@ def train_conv_lstm(cfg):
     DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     dataloader = get_dataloader(cfg)
-    model = EncoderDecoderConvLSTM(nf=cfg.model.number_filters, in_chan=cfg.model.input_channels)
+    model = EncoderDecoderConvLSTM(nf=cfg.model.number_filters, in_chan=cfg.model.input_channels, **cfg.model)
     model.to(DEVICE)
 
     optimizer = optim.SGD(model.parameters(), 

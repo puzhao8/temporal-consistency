@@ -16,6 +16,8 @@ model:
     name: ConvLSTM
     future_seq: 0
 
+    custom_init: False
+
     tc: 0 # total_loss =  (1-cfg.model.tc) * dice_loss + cfg.model.tc * tc_loss
     hr: 0.8 # total_dice_loss = (1-cfg.model.hr) * dice_loss_lr + cfg.model.hr * dice_loss_hr
 

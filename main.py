@@ -23,7 +23,9 @@ def run():
 @hydra.main(config_path="./config", config_name="config")
 def run_app(cfg : DictConfig) -> None:
     print(OmegaConf.to_yaml(cfg))
-        # # For reproducibility, set random seed
+
+
+    # # For reproducibility, set random seed
     if cfg.experiment.seed == 'None':
         cfg.experiment.seed = random.randint(1, 10000)
     random.seed(cfg.experiment.seed)
