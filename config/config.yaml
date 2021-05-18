@@ -6,7 +6,7 @@ project:
 
 data:
     name: elephant # rand, Ljusdals, elephant
-    folder: s2_kmap
+    folder: s2_km_data
     note: 100m
     
     train_size: 0.7
@@ -16,7 +16,7 @@ model:
     name: ConvLSTM
     future_seq: 0
 
-    tc: 0 # total_loss =  (1-cfg.model.tc) * dice_loss + cfg.model.tc * tc_loss
+    tc: 0.9 # total_loss =  (1-cfg.model.tc) * dice_loss + cfg.model.tc * tc_loss
 
     batch_size: 128
     number_filters: 64
@@ -38,6 +38,7 @@ experiment:
     note: bal
     name: ${data.name}_${data.folder}_${model.name}_tc_${model.tc}_${experiment.note}
     output: ./outputs/${experiment.name}_${now:%Y%m%dT%H%M%S} #${defaults.0.data}
+    seed: 0
 
 hydra:
     run:
