@@ -1,4 +1,5 @@
 import numpy as np
+import random
 import matplotlib.pyplot as plt
 import torch
 import torchvision
@@ -22,6 +23,14 @@ def run():
 @hydra.main(config_path="./config", config_name="config")
 def run_app(cfg : DictConfig) -> None:
     print(OmegaConf.to_yaml(cfg))
+        # # For reproducibility, set random seed
+    if cfg.experiment.seed == 'None':
+        cfg.experiment.seed = random.randint(1, 10000)
+    random.seed(cfg.experiment.seed)
+    np.random.seed(cfg.experiment.seed)
+    torch.manual_seed(cfg.experiment.seed)
+    torch.cuda.manual_seed_all(cfg.experiment.seed)
+    
     wandb.init(config=cfg, project=cfg.project.name, name=cfg.experiment.name)
 
 
