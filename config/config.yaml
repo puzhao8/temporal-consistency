@@ -2,11 +2,11 @@
 #     - data: dataset1
 #       optional: true
 project:
-    name: temporal-consistency
+    name: Spatio-Temproal-Consistency
 
 data:
     name: elephant # rand, Ljusdals, elephant
-    folder: s2_km
+    folder: s2_km_data
     note: 100m
     
     train_size: 0.7
@@ -16,8 +16,10 @@ model:
     name: ConvLSTM
     future_seq: 0
 
+    custom_init: False
+
     tc: 0 # total_loss =  (1-cfg.model.tc) * dice_loss + cfg.model.tc * tc_loss
-    hr: 0.8
+    hr: 0.8 # total_dice_loss = (1-cfg.model.hr) * dice_loss_lr + cfg.model.hr * dice_loss_hr
 
     batch_size: 128
     number_filters: 64
@@ -36,7 +38,7 @@ model:
     saveImgArrFlag: True # save arranged image array or not
 
 experiment:
-    note: bal
+    note: dft
     name: ${data.name}_${data.folder}_${model.name}_tc_${model.tc}_${experiment.note}
     output: ./outputs/${experiment.name}_${now:%Y%m%dT%H%M%S} #${defaults.0.data}
     seed: 0

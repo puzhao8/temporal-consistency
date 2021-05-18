@@ -5,7 +5,7 @@ import numpy as np
 
 class ConvLSTMCell(nn.Module):
 
-    def __init__(self, input_dim, hidden_dim, kernel_size, bias):
+    def __init__(self, input_dim, hidden_dim, kernel_size, bias, **kwargs):
         """
         Initialize ConvLSTM cell.
 
@@ -35,7 +35,9 @@ class ConvLSTMCell(nn.Module):
                               kernel_size=self.kernel_size,
                               padding=self.padding,
                               bias=self.bias)
-        normal_custom(self.conv.weight)
+        
+        if 'custom_init' in kwargs.keys() and kwargs['custom_init']:
+            normal_custom(self.conv.weight)
 
     def forward(self, input_tensor, cur_state):
         h_cur, c_cur = cur_state

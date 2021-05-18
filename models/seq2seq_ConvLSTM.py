@@ -4,7 +4,7 @@ import torch.nn as nn
 from models.ConvLSTMCell import ConvLSTMCell
 
 class EncoderDecoderConvLSTM(nn.Module):
-    def __init__(self, nf, in_chan):
+    def __init__(self, nf, in_chan, **kwargs):
         super(EncoderDecoderConvLSTM, self).__init__()
 
         """ ARCHITECTURE 
@@ -18,22 +18,32 @@ class EncoderDecoderConvLSTM(nn.Module):
         self.encoder_1_convlstm = ConvLSTMCell(input_dim=in_chan,
                                                hidden_dim=nf,
                                                kernel_size=(3, 3),
-                                               bias=True)
+                                               bias=True,
+                                               **kwargs
+                                               )
 
         self.encoder_2_convlstm = ConvLSTMCell(input_dim=nf,
                                                hidden_dim=nf,
                                                kernel_size=(3, 3),
-                                               bias=True)
+                                               bias=True,
+                                                **kwargs
+                                               )
 
         self.decoder_1_convlstm = ConvLSTMCell(input_dim=nf,  # nf + 1
                                                hidden_dim=nf,
                                                kernel_size=(3, 3),
-                                               bias=True)
+                                               bias=True,
+                                               **kwargs
+                                               )
 
         self.decoder_2_convlstm = ConvLSTMCell(input_dim=nf,
                                                hidden_dim=nf,
                                                kernel_size=(3, 3),
-                                               bias=True)
+                                               bias=True,
+                                               **kwargs
+                                            )
+
+                                               
 
         self.decoder_CNN = nn.Conv3d(in_channels=nf,
                                      out_channels=1,
