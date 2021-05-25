@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from models.ConvLSTMCell import ConvLSTMCell, normal_custom
+from models.ConvLSTMCell import *
 
 class EncoderDecoderConvLSTM(nn.Module):
     def __init__(self, nf, in_chan, **kwargs):
