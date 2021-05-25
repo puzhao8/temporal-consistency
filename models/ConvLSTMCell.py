@@ -36,8 +36,8 @@ class ConvLSTMCell(nn.Module):
                               padding=self.padding,
                               bias=self.bias)
         
-        if 'custom_init' in kwargs.keys() and kwargs['custom_init']:
-            normal_custom(self.conv.weight)
+        if 'custom_init' in kwargs.keys() and kwargs['custom_init'] is not None:
+            eval(kwargs['custom_init'])(self.conv.weight)
 
     def forward(self, input_tensor, cur_state):
         h_cur, c_cur = cur_state
@@ -68,5 +68,16 @@ def _no_grad_normal_(tensor, mean, std):
 
 def normal_custom(w):
     fan_out, fan_in = w.shape[:2]
+    std = float(fan_in + fan_out) / float(fan_in * fan_out)
+    return _no_grad_normal_(w, 0., std)
+
+
+def normal_custom1(w):
+    fan_out, fan_in = w.shape
+    std = np.sqrt(float(fan_in + fan_out) / float(fan_in * fan_out))
+    return _no_grad_normal_(w, 0., std)
+
+def normal_custom2(w):
+    fan_out, fan_in = w.shape
     std = np.sqrt(1 / np.abs(fan_in - fan_out))
     return _no_grad_normal_(w, 0., std)
