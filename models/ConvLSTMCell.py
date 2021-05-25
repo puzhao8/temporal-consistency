@@ -38,7 +38,7 @@ class ConvLSTMCell(nn.Module):
         
         if 'custom_init' in kwargs.keys() and kwargs['custom_init'] is not None:
             # eval(kwargs['custom_init'])(self.conv.weight)
-            torch.nn.init.xavier_normal_(self.decoder_CNN.weight)
+            torch.nn.init.xavier_normal_(self.conv.weight)
 
     def forward(self, input_tensor, cur_state):
         h_cur, c_cur = cur_state
