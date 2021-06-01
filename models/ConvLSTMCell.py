@@ -1,6 +1,7 @@
 import torch.nn as nn
 import torch
 import numpy as np
+from torch.nn.init import xavier_normal_, xavier_uniform_, kaiming_normal_
 
 
 class ConvLSTMCell(nn.Module):
