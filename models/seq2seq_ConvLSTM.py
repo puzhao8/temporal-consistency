@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+from torch.nn.init import xavier_normal_, xavier_uniform_, kaiming_normal_
 
 from models.ConvLSTMCell import *
 
@@ -50,8 +51,8 @@ class EncoderDecoderConvLSTM(nn.Module):
                                      kernel_size=(1, 3, 3),
                                      padding=(0, 1, 1))
         if kwargs['custom_init'] is not None:
-            # eval(kwargs['custom_init'])(self.decoder_CNN.weight)
-            torch.nn.init.xavier_normal_(self.decoder_CNN.weight)
+            eval(kwargs['custom_init'])(self.decoder_CNN.weight)
+            # torch.nn.init.xavier_normal_(self.decoder_CNN.weight)
 
 
     def autoencoder(self, x, seq_len, future_step, h_t, c_t, h_t2, c_t2, h_t3, c_t3, h_t4, c_t4):
