@@ -33,7 +33,7 @@ def run_app(cfg : DictConfig) -> None:
     torch.manual_seed(cfg.experiment.seed)
     torch.cuda.manual_seed_all(cfg.experiment.seed)
     
-    wandb.init(config=cfg, project=cfg.project.name, name=cfg.experiment.name)
+    wandb.init(config=cfg, project=cfg.project.name, name=cfg.experiment.name, entity=cfg.experiment.wandb_team)
 
 
     train_conv_lstm(cfg)
